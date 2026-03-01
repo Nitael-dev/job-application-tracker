@@ -36,7 +36,6 @@ export default function SignUp() {
         email,
         password,
       });
-      console.log("signUp", result);
       if (result.error) {
         setError(result.error.message ?? "Failed to sign up");
       } else {
