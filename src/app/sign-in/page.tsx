@@ -34,7 +34,6 @@ export default function SignIn() {
         email,
         password,
       });
-      console.log("signIn", result);
       if (result.error) {
         setError(result.error.message ?? "Failed to sign in");
       } else {
