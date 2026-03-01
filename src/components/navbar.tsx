@@ -39,7 +39,7 @@ export function Navbar() {
                 </Button>
               </Link>
               <DropdownMenu>
-                <DropdownMenuTrigger>
+                <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     className="relative h-8 w-8 rounded-full"
@@ -51,7 +51,7 @@ export function Navbar() {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 align-end">
+                <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="font-small">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">

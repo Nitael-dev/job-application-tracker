@@ -103,7 +103,7 @@ export default function SignUp() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Jonh Doe"
+                placeholder="********"
                 value={password}
                 onChange={({ target: { value } }) => setPassword(value)}
                 required

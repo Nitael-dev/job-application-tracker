@@ -86,7 +86,7 @@ export default function SignIn() {
               <Input
                 id="password"
                 type="password"
-                placeholder="Jonh Doe"
+                placeholder="********"
                 required
                 value={password}
                 onChange={({ target: { value } }) => setPassword(value)}
