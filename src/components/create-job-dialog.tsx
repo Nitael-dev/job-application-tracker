@@ -67,7 +67,7 @@ export function CreateJobApplicationDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button
           variant="outline"
           className="w-full mb-4 justify-start text-muted-foreground border-dashed border-2 hover:border-solid hover:bg-muted/50"
@@ -125,7 +125,7 @@ export function CreateJobApplicationDialog({
                   placeholder="e.g., $100k - $150k"
                   value={formData.salary}
                   onChange={({ target: { value } }) =>
-                    setFormData((old) => ({ ...old, company: value }))
+                    setFormData((old) => ({ ...old, salary: value }))
                   }
                 />
               </div>

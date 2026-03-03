@@ -1,4 +1,6 @@
-import { Board, Column } from "@shared/lib/models/models.types";
+"use client";
+
+import { Board, Column, JobApplication } from "@shared/lib/models/models.types";
 import {
   Award,
   Calendar,
@@ -17,6 +19,8 @@ import {
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
 import { CreateJobApplicationDialog } from "./create-job-dialog";
+import { JobApplicationCard } from "./job-application-card";
+import { useBoard } from "@shared/lib/hooks/useBoard";
 
 interface KanbanBoardProps {
   board: Board;
@@ -55,11 +59,15 @@ function DroppableColumn({
   column,
   config,
   boardId,
+  sortedColumns,
 }: {
   column: Column;
   config: ColProps;
   boardId: string;
+  sortedColumns: Column[];
 }) {
+  const sortedJobs =
+    column.jobApplications?.sort((a, b) => a.order - b.order) || [];
   return (
     <Card className="min-w-[300px] flex-shrink-0 shadow-md p-0">
       <CardHeader
@@ -73,7 +81,7 @@ function DroppableColumn({
             </CardTitle>
           </div>
           <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
@@ -92,6 +100,18 @@ function DroppableColumn({
         </div>
       </CardHeader>
       <CardContent className="space-y-2 pt-4 bg-gray-50/50 min-h-[400px] rounded-b-lg">
+        {sortedJobs.map((job) => {
+          return (
+            <SortableJobCard
+              key={job._id}
+              job={{
+                ...job,
+                columnId: job.columnId || column._id,
+              }}
+              columns={sortedColumns}
+            />
+          );
+        })}
         <CreateJobApplicationDialog
           columnId={String(column._id)}
           boardId={String(boardId)}
@@ -101,10 +121,26 @@ function DroppableColumn({
   );
 }
 
+function SortableJobCard({
+  job,
+  columns,
+}: {
+  job: JobApplication;
+  columns: Column[];
+}) {
+  console.log(job);
+  return (
+    <div>
+      <JobApplicationCard job={job} columns={columns} />
+    </div>
+  );
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function KanbanBoard({ board, userId }: KanbanBoardProps) {
-  const columns = board.columns;
+  const { columns } = useBoard(board);
 
+  const sortedColumns = columns?.sort((a, b) => a.order - b.order) || [];
   return (
     <div>
       <div>
@@ -116,10 +152,11 @@ export function KanbanBoard({ board, userId }: KanbanBoardProps) {
 
           return (
             <DroppableColumn
-              key={col.name}
+              key={col._id}
               boardId={board._id}
               column={col}
               config={config}
+              sortedColumns={sortedColumns}
             />
           );
         })}

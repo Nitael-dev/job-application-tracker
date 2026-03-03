@@ -1,4 +1,4 @@
-interface JobApplication {
+export interface JobApplication {
   _id: string;
   company: string;
   position: string;
@@ -16,7 +16,7 @@ interface JobApplication {
 export interface Column {
   _id: string;
   name: string;
-  order: string;
+  order: number;
   jobApplications: JobApplication[];
 }
 
