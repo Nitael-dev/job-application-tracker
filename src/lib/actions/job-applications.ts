@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getSession } from "../auth/auth";
 import connectDB from "../db";
 import { Board, Column, JobApplication } from "../models";
+import { JobApplicationProps } from "../models/models.types";
 
 interface JobApplicationData {
   company: string;
@@ -92,7 +93,7 @@ export async function createJobApplication(data: JobApplicationData) {
   revalidatePath("/dashboard");
 
   return {
-    data: JSON.parse(JSON.stringify(jobApplication)),
+    data: JSON.parse(JSON.stringify(jobApplication)) as JobApplicationProps,
   };
 }
 
@@ -230,8 +231,35 @@ export async function updateJobApplication(
   const updated = await JobApplication.findByIdAndUpdate(id, updatesToApply, {
     new: true,
   });
-
   revalidatePath("/dashboard");
 
   return { data: JSON.parse(JSON.stringify(updated)) };
+}
+
+export async function deleteJobApplication(jobId: string) {
+  const session = await getSession();
+
+  if (!session?.user) {
+    return { error: "Unauthorized" };
+  }
+
+  const jobApplication = await JobApplication.findByIdAndDelete({
+    _id: jobId,
+  });
+
+  await Column.findByIdAndUpdate(jobApplication.columnId, {
+    $pull: { jobApplications: jobId },
+  });
+
+  if (!jobApplication) {
+    return { error: "Job application not found" };
+  }
+
+  if (jobApplication.userId !== session.user.id) {
+    return { error: "Unauthorized" };
+  }
+
+  revalidatePath("/dashboard");
+
+  return { data: JSON.parse(JSON.stringify(jobApplication)) };
 }

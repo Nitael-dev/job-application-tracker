@@ -14,12 +14,22 @@ import {
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-import { useState } from "react";
-import { createJobApplication } from "@shared/lib/actions/job-applications";
+import {
+  createJobApplication,
+  updateJobApplication,
+} from "@shared/lib/actions/job-applications";
+import { JobApplicationProps } from "@shared/lib/models/models.types";
 
-interface CreateJobApplicationDialogProps {
+interface JobApplicationDialogProps {
   columnId: string;
   boardId: string;
+  loading: boolean;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  open: boolean;
+  jobId?: string;
+  formData: typeof INITIAL_FORM_DATA;
+  setFormData: React.Dispatch<React.SetStateAction<typeof INITIAL_FORM_DATA>>;
+  handleDialog(e: boolean): void;
 }
 
 const INITIAL_FORM_DATA = {
@@ -33,30 +43,56 @@ const INITIAL_FORM_DATA = {
   description: "",
 };
 
-export function CreateJobApplicationDialog({
+export function JobApplicationDialog({
   columnId,
   boardId,
-}: CreateJobApplicationDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
-
+  loading,
+  setLoading,
+  open,
+  jobId,
+  formData,
+  setFormData,
+  handleDialog,
+}: JobApplicationDialogProps) {
   async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
 
+    if (loading) return;
+    setLoading(true);
     try {
-      const result = await createJobApplication({
-        ...formData,
-        columnId,
-        boardId,
-        tags: formData.tags
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter((tag) => tag.length > 0),
-      });
+      let result:
+        | {
+            data: JobApplicationProps;
+            error?: undefined;
+          }
+        | {
+            data?: undefined;
+            error: string;
+          } = { error: "", data: undefined };
+      if (!jobId) {
+        result = await createJobApplication({
+          ...formData,
+          columnId,
+          boardId,
+          tags: formData.tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0),
+        });
+      } else {
+        result = await updateJobApplication(jobId, {
+          ...formData,
+          columnId,
+          tags: formData.tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0),
+        });
+      }
 
       if (!result.error) {
         setFormData(INITIAL_FORM_DATA);
-        setOpen(false);
+        handleDialog(false);
       } else {
         console.error("Failed to create job: ", result.error);
       }
@@ -66,7 +102,7 @@ export function CreateJobApplicationDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleDialog}>
       <DialogTrigger asChild>
         <Button
           variant="outline"
@@ -78,8 +114,14 @@ export function CreateJobApplicationDialog({
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add Job Application</DialogTitle>
-          <DialogDescription>Track a new job application</DialogDescription>
+          <DialogTitle>
+            {jobId ? "Update JobApplication" : "Add Job Application"}
+          </DialogTitle>
+          <DialogDescription>
+            {jobId
+              ? "Modify a current job application"
+              : "Track a new job application"}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-4">
@@ -181,11 +223,19 @@ export function CreateJobApplicationDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                handleDialog(false);
+              }}
             >
               Cancel
             </Button>
-            <Button type="submit">Add Application</Button>
+            <Button type="submit">
+              {loading
+                ? "Sending..."
+                : jobId
+                  ? "Save Changes"
+                  : "Add Application"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

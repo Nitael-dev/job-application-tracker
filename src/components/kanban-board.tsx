@@ -1,6 +1,10 @@
 "use client";
 
-import { Board, Column, JobApplication } from "@shared/lib/models/models.types";
+import {
+  Board,
+  Column,
+  JobApplicationProps,
+} from "@shared/lib/models/models.types";
 import {
   Award,
   Calendar,
@@ -18,9 +22,10 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { CreateJobApplicationDialog } from "./create-job-dialog";
+import { JobApplicationDialog } from "./job-dialog";
 import { JobApplicationCard } from "./job-application-card";
 import { useBoard } from "@shared/lib/hooks/useBoard";
+import { useState } from "react";
 
 interface KanbanBoardProps {
   board: Board;
@@ -55,6 +60,17 @@ const COLUMN_CONFIG: Array<ColProps> = [
   },
 ];
 
+const INITIAL_FORM_DATA = {
+  company: "",
+  position: "",
+  location: "",
+  notes: "",
+  salary: "",
+  jobUrl: "",
+  tags: "",
+  description: "",
+};
+
 function DroppableColumn({
   column,
   config,
@@ -66,8 +82,22 @@ function DroppableColumn({
   boardId: string;
   sortedColumns: Column[];
 }) {
+  const [open, setOpen] = useState(false);
+  const [jobId, setJobId] = useState<string | undefined>();
+
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
+
+  const [loading, setLoading] = useState(false);
+
   const sortedJobs =
     column.jobApplications?.sort((a, b) => a.order - b.order) || [];
+
+  function handleDialog(isOpen: boolean) {
+    setLoading(false);
+    setJobId(undefined);
+    setOpen(isOpen);
+  }
+
   return (
     <Card className="min-w-[300px] flex-shrink-0 shadow-md p-0">
       <CardHeader
@@ -104,6 +134,21 @@ function DroppableColumn({
           return (
             <SortableJobCard
               key={job._id}
+              handleJob={() => {
+                setJobId(job._id);
+                setOpen((old) => !old);
+
+                setFormData({
+                  company: job.company,
+                  description: job.description || "",
+                  jobUrl: job.jobUrl || "",
+                  location: job.location || "",
+                  notes: job.notes || "",
+                  position: job.position,
+                  salary: job.salary || "",
+                  tags: job.tags?.toString().replaceAll(",", ", ") || "",
+                });
+              }}
               job={{
                 ...job,
                 columnId: job.columnId || column._id,
@@ -112,7 +157,14 @@ function DroppableColumn({
             />
           );
         })}
-        <CreateJobApplicationDialog
+        <JobApplicationDialog
+          open={open}
+          loading={loading}
+          setLoading={setLoading}
+          jobId={jobId}
+          formData={formData}
+          setFormData={setFormData}
+          handleDialog={handleDialog}
           columnId={String(column._id)}
           boardId={String(boardId)}
         />
@@ -124,14 +176,15 @@ function DroppableColumn({
 function SortableJobCard({
   job,
   columns,
+  handleJob,
 }: {
-  job: JobApplication;
+  job: JobApplicationProps;
   columns: Column[];
+  handleJob(): void;
 }) {
-  console.log(job);
   return (
     <div>
-      <JobApplicationCard job={job} columns={columns} />
+      <JobApplicationCard job={job} columns={columns} handleJob={handleJob} />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 "use client";
-import { Column, JobApplication } from "@shared/lib/models/models.types";
+import { Column, JobApplicationProps } from "@shared/lib/models/models.types";
 import { Card, CardContent } from "./ui/card";
 import { Edit2, ExternalLink, MoreVertical, Trash2 } from "lucide-react";
 import {
@@ -9,14 +9,22 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { updateJobApplication } from "@shared/lib/actions/job-applications";
+import {
+  deleteJobApplication,
+  updateJobApplication,
+} from "@shared/lib/actions/job-applications";
 
 interface JobApplicationCardProps {
-  job: JobApplication;
+  job: JobApplicationProps;
   columns: Column[];
+  handleJob(): void;
 }
 
-export function JobApplicationCard({ job, columns }: JobApplicationCardProps) {
+export function JobApplicationCard({
+  job,
+  columns,
+  handleJob,
+}: JobApplicationCardProps) {
   async function handleMove(newColumnId: string) {
     try {
       await updateJobApplication(job._id, {
@@ -27,8 +35,20 @@ export function JobApplicationCard({ job, columns }: JobApplicationCardProps) {
     }
   }
 
+  async function handleDelete(jobId: string) {
+    try {
+      const result = await deleteJobApplication(jobId);
+      console.log("deleted", result);
+      if (result.error) {
+        console.log(result.error);
+      }
+    } catch (error) {
+      console.log("Failed to delete the selected job: ", error);
+    }
+  }
+
   return (
-    <div>
+    <>
       <Card className="cursor-pointer transition-shadow hover:shadow-lg bg-white shadow-sm">
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-2">
@@ -77,7 +97,10 @@ export function JobApplicationCard({ job, columns }: JobApplicationCardProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem
+                    onClick={handleJob}
+                    className="cursor-pointer"
+                  >
                     <Edit2 className="mr-2 h-4 w-4" />
                     Edit
                   </DropdownMenuItem>
@@ -96,7 +119,10 @@ export function JobApplicationCard({ job, columns }: JobApplicationCardProps) {
                         ))}
                     </>
                   )}
-                  <DropdownMenuItem className="text-destructive cursor-pointer">
+                  <DropdownMenuItem
+                    onClick={() => handleDelete(job._id)}
+                    className="text-destructive cursor-pointer"
+                  >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
                   </DropdownMenuItem>
@@ -106,6 +132,6 @@ export function JobApplicationCard({ job, columns }: JobApplicationCardProps) {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 }
