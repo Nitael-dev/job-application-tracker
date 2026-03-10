@@ -14,7 +14,7 @@ declare global {
 const cached: MongooseCache = global.mongoose || { conn: null, promise: null };
 
 if (!global.mongoose) {
-  global.mongoose = cached;
+  global.mongoose = cached
 }
 
 async function connectDB() {
