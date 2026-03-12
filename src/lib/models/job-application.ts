@@ -4,6 +4,7 @@ export interface IJobApplication extends Document {
   company: string;
   position: string;
   location?: string;
+  salary?: string;
   status: string;
   columnId: Schema.Types.ObjectId;
   boardId: Schema.Types.ObjectId;
@@ -29,6 +30,9 @@ const JobApplicationSchema = new Schema<IJobApplication>(
       required: true,
     },
     location: {
+      type: String,
+    },
+    salary: {
       type: String,
     },
     status: {
