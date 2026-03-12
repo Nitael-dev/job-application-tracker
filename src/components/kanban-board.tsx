@@ -94,7 +94,9 @@ function DroppableColumn({
 
   function handleDialog(isOpen: boolean) {
     setLoading(false);
-    setJobId(undefined);
+    setTimeout(() => {
+      setJobId(undefined);
+    }, 1000);
     setOpen(isOpen);
   }
 
