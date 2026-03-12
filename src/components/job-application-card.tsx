@@ -18,12 +18,14 @@ interface JobApplicationCardProps {
   job: JobApplicationProps;
   columns: Column[];
   handleJob(): void;
+  dragHandleProps?: React.HTMLAttributes<HTMLElement>;
 }
 
 export function JobApplicationCard({
   job,
   columns,
   handleJob,
+  dragHandleProps
 }: JobApplicationCardProps) {
   async function handleMove(newColumnId: string) {
     try {
@@ -38,7 +40,6 @@ export function JobApplicationCard({
   async function handleDelete(jobId: string) {
     try {
       const result = await deleteJobApplication(jobId);
-      console.log("deleted", result);
       if (result.error) {
         console.log(result.error);
       }
@@ -49,7 +50,7 @@ export function JobApplicationCard({
 
   return (
     <>
-      <Card className="cursor-pointer transition-shadow hover:shadow-lg bg-white shadow-sm">
+      <Card className="cursor-pointer transition-shadow hover:shadow-lg bg-white shadow-sm" {...dragHandleProps}>
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
